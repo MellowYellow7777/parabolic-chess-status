@@ -1,11 +1,15 @@
-name: Set Maintenance
+name: Schedule Maintenance
 
 on:
   workflow_dispatch:
     inputs:
       minutesUntilStart:
         description: 'Minutes until maintenance starts'
+        default: '0'
         required: true
+      message:
+        description: 'Message'
+        required: false
 
 jobs:
   set-maintenance:
@@ -14,12 +18,23 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Compute maintenance JSON
-        run: |
+        run:
+          MESSAGE='${{ github.event.inputs.message }}'
+
           if [ "${{ github.event.inputs.minutesUntilStart }}" -eq 0 ]; then
-            echo '{"state":"maintenance","start":"true"}' > maintenance.json
+            if [ -n "$MESSAGE" ]; then
+              printf '{"state":"maintenance","start":"true","message":%s}\n' "$(jq -Rn --arg v "$MESSAGE" '$v')" > maintenance.json
+            else
+              echo '{"state":"maintenance","start":"true"}' > maintenance.json
+            fi
           else
-            START=$(date -u -d "+${{ github.event.inputs.minutesUntilStart }} minutes" +"%Y-%m-%dT%H:%M:%SZ")
-            echo "{\"state\":\"maintenance\",\"start\":\"$START\"}" > maintenance.json
+            START=$(date -u -d "+${{ github.event.inputs.minutesUntilStart }} minutes" +"%Y-%m-%dT%H:%M:%S.%3NZ")
+
+            if [ -n "$MESSAGE" ]; then
+              printf '{"state":"maintenance","start":"%s","message":%s}\n' "$START" "$(jq -Rn --arg v "$MESSAGE" '$v')" > maintenance.json
+            else
+              printf '{"state":"maintenance","start":"%s"}\n' "$START" > maintenance.json
+            fi
           fi
 
       - name: Commit and push
