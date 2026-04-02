@@ -1,0 +1,31 @@
+name: Set Maintenance
+
+on:
+  workflow_dispatch:
+    inputs:
+      minutesUntilStart:
+        description: 'Minutes until maintenance starts'
+        required: true
+
+jobs:
+  set-maintenance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compute maintenance JSON
+        run: |
+          if [ "${{ github.event.inputs.minutesUntilStart }}" -eq 0 ]; then
+            echo '{"state":"maintenance","start":"true"}' > maintenance.json
+          else
+            START=$(date -u -d "+${{ github.event.inputs.minutesUntilStart }} minutes" +"%Y-%m-%dT%H:%M:%SZ")
+            echo "{\"state\":\"maintenance\",\"start\":\"$START\"}" > maintenance.json
+          fi
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add maintenance.json
+          git commit -m "Update maintenance JSON"
+          git push
