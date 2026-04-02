@@ -1,0 +1,25 @@
+name: Set Status Online
+
+permissions:
+  contents: write
+
+on:
+  workflow_dispatch:
+
+jobs:
+  set-online:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set Status Online
+        run: |
+          echo '{"state":"ok"}' > status.json
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add status.json
+          git commit -m "Update status JSON"
+          git push
