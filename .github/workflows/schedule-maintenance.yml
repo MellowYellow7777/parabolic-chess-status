@@ -26,17 +26,17 @@ jobs:
 
           if [ "${{ github.event.inputs.minutesUntilStart }}" -eq 0 ]; then
             if [ -n "$MESSAGE" ]; then
-              printf '{"state":"maintenance","start":"true","message":%s}\n' "$(jq -Rn --arg v "$MESSAGE" '$v')" > maintenance.json
+              printf '{"state":"maintenance","start":"true","message":%s}\n' "$(jq -Rn --arg v "$MESSAGE" '$v')" > status.json
             else
-              echo '{"state":"maintenance","start":"true"}' > maintenance.json
+              echo '{"state":"maintenance","start":"true"}' > status.json
             fi
           else
             START=$(date -u -d "+${{ github.event.inputs.minutesUntilStart }} minutes" +"%Y-%m-%dT%H:%M:%S.%3NZ")
 
             if [ -n "$MESSAGE" ]; then
-              printf '{"state":"maintenance","start":"%s","message":%s}\n' "$START" "$(jq -Rn --arg v "$MESSAGE" '$v')" > maintenance.json
+              printf '{"state":"maintenance","start":"%s","message":%s}\n' "$START" "$(jq -Rn --arg v "$MESSAGE" '$v')" > status.json
             else
-              printf '{"state":"maintenance","start":"%s"}\n' "$START" > maintenance.json
+              printf '{"state":"maintenance","start":"%s"}\n' "$START" > status.json
             fi
           fi
 
@@ -44,6 +44,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add maintenance.json
-          git commit -m "Update maintenance JSON"
+          git add status.json
+          git commit -m "Update status JSON"
           git push
