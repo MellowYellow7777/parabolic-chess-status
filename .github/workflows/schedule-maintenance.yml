@@ -1,5 +1,8 @@
 name: Schedule Maintenance
 
+permissions:
+  contents: write
+
 on:
   workflow_dispatch:
     inputs:
